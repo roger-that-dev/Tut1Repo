@@ -12,8 +12,6 @@ import java.util.Set;
 
 /**
  * The state object recording IOU agreements between two parties.
- *
- * A state must implement [ContractState] or one of its descendants.
  */
 public class IOUState implements LinearState {
     private final Integer value;
@@ -45,14 +43,12 @@ public class IOUState implements LinearState {
     public Party getRecipient() { return recipient; }
     @Override public IOUContract getContract() { return contract; }
     @Override public UniqueIdentifier getLinearId() { return linearId; }
+    /** The involved parties. */
     @Override public List<AbstractParty> getParticipants() {
         return Arrays.asList(sender, recipient);
     }
 
-    /**
-     * This returns true if the state should be tracked by the vault of a particular node. In this case the logic is
-     * simple; track this state if we are one of the involved parties.
-     */
+    /** Tells the vault to track a state if we are one of the participants. */
     @Override public boolean isRelevant(Set<? extends PublicKey> ourKeys) {
         return ourKeys.contains(sender.getOwningKey()) || ourKeys.contains(recipient.getOwningKey());
     }

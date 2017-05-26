@@ -16,17 +16,10 @@ import net.corda.flows.FinalityFlow
 import net.corda.flows.SignTransactionFlow
 
 /**
- * This flow allows two parties (the [Initiator] and the [Acceptor]) to come to an agreement about the IOU encapsulated
- * within an [IOUState].
+ * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
  *
  * In our simple example, the [Acceptor] always accepts a valid IOU.
- *
- * These flows have deliberately been implemented by using only the call() method for ease of understanding. In
- * practice we would recommend splitting up the various stages of the flow into sub-routines.
- *
- * All methods called within the [FlowLogic] sub-class need to be annotated with the @Suspendable annotation.
  */
-
 object IOUFlow {
     @InitiatingFlow
     @StartableByRPC

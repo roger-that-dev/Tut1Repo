@@ -1,7 +1,10 @@
 package com.example
 
 import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.LinearState
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.crypto.keys
+import net.corda.core.identity.Party
 
 /**
  * The state object recording IOU agreements between two parties.
@@ -14,14 +17,14 @@ import net.corda.core.crypto.keys
  * @param contract the contract which governs which transactions are valid for this state object.
  */
 data class IOUState(val value: Int,
-                    val sender: net.corda.core.identity.Party,
-                    val recipient: net.corda.core.identity.Party,
+                    val sender: Party,
+                    val recipient: Party,
                     override val contract: IOUContract,
-                    override val linearId: net.corda.core.contracts.UniqueIdentifier = net.corda.core.contracts.UniqueIdentifier()): net.corda.core.contracts.LinearState {
+                    override val linearId: UniqueIdentifier = UniqueIdentifier()): LinearState {
 
-    /** The public keys of the involved parties. */
+    /** The involved parties. */
     override val participants get() = listOf(sender, recipient)
 
-    /** Tells the vault to track a state if we are one of the parties involved. */
+    /** Tells the vault to track a state if we are one of the participants. */
     override fun isRelevant(ourKeys: Set<java.security.PublicKey>) = ourKeys.intersect(participants.flatMap { it.owningKey.keys }).isNotEmpty()
 }

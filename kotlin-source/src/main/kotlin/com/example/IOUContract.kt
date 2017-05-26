@@ -4,20 +4,15 @@ import net.corda.core.contracts.*
 import net.corda.core.crypto.SecureHash
 
 /**
- * A basic smart contract that enforces rules regarding the creation of a valid [IOUState].
+ * A basic smart contract that enforces rules regarding the issuance of [IOUState].
  *
- * For a new [IOUState] to be issued onto the ledger, a transaction is required which takes:
+ * A transaction issuing a new [IOUState] onto the ledger must have:
  * - Zero input states.
  * - One output state: the new [IOUState].
  * - A Create() command with the public keys of both the sender and the recipient.
- *
- * All contracts must sub-class the [Contract] interface.
  */
 open class IOUContract : Contract {
-    /**
-     * The verify() function of all the states' contracts must not throw an exception for a transaction to be
-     * considered valid.
-     */
+    /** If verify() doesn't throw an exception, the contract accepts the transaction. */
     override fun verify(tx: TransactionForContract) {
         val command = tx.commands.requireSingleCommand<Commands>()
         requireThat {

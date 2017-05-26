@@ -22,15 +22,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This flow allows two parties (the [Initiator] and the [Acceptor]) to come to an agreement about the IOU encapsulated
- * within an [IOUState].
- * <p>
+ * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
+ *
  * In our simple example, the [Acceptor] always accepts a valid IOU.
- * <p>
- * These flows have deliberately been implemented by using only the call() method for ease of understanding. In
- * practice we would recommend splitting up the various stages of the flow into sub-routines.
- * <p>
- * All methods called within the [FlowLogic] sub-class need to be annotated with the @Suspendable annotation.
  */
 public class IOUFlow {
     @InitiatingFlow
