@@ -1,7 +1,5 @@
 package com.example;
 
-import com.example.IOUContract;
-import com.google.common.collect.ImmutableList;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.AbstractParty;
@@ -11,10 +9,6 @@ import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
-import static net.corda.core.crypto.CryptoUtils.getKeys;
 
 /**
  * The state object recording IOU agreements between two parties.

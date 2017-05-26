@@ -20,7 +20,6 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 
-
 public class IOUFlowTests {
     private MockNetwork net;
     private MockNode a;
