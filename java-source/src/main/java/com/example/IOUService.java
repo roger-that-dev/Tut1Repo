@@ -1,6 +1,5 @@
-package com.example.service;
+package com.example;
 
-import com.example.flow.IOUFlow;
 import net.corda.core.node.PluginServiceHub;
 
 /**

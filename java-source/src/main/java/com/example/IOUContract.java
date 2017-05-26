@@ -1,27 +1,22 @@
-package com.example.contract;
+package com.example;
 
-import com.example.state.IOUState;
+import com.google.common.collect.ImmutableList;
 import net.corda.core.contracts.AuthenticatedObject;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.contracts.TransactionForContract;
 import net.corda.core.crypto.SecureHash;
-import net.corda.core.identity.AbstractParty;
-
-import java.util.stream.Collectors;
 
 import static net.corda.core.contracts.ContractsDSL.requireSingleCommand;
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 /**
- * A implementation of a basic smart contract in Corda.
+ * A basic smart contract that enforces rules regarding the creation of a valid [IOUState].
  *
- * This contract enforces rules regarding the creation of a valid [IOUState], which in turn encapsulates an [IOU].
- *
- * For a new [IOU] to be issued onto the ledger, a transaction is required which takes:
+ * For a new [IOUState] to be issued onto the ledger, a transaction is required which takes:
  * - Zero input states.
- * - One output state: the new [IOU].
- * - An Create() command with the public keys of both the sender and the recipient.
+ * - One output state: the new [IOUState].
+ * - A Create() command with the public keys of both the sender and the recipient.
  *
  * All contracts must sub-class the [Contract] interface.
  */
@@ -43,8 +38,9 @@ public class IOUContract implements Contract {
             require.using("The sender and the recipient cannot be the same entity.",
                     out.getSender() != out.getRecipient());
             require.using("All of the participants must be signers.",
-                    command.getSigners().containsAll(out.getParticipants().stream().map(AbstractParty::getOwningKey).collect(Collectors.toList())));
-
+                    command.getSigners().containsAll(ImmutableList.of(
+                            out.getSender().getOwningKey(),
+                            out.getRecipient().getOwningKey())));
             // IOU-specific constraints.
             require.using("The IOU's value must be non-negative.",
                     out.getValue() > 0);

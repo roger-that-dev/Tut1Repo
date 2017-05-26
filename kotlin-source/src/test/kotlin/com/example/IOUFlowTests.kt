@@ -1,11 +1,9 @@
-package com.example.contract
+package com.example
 
-import com.example.flow.IOUFlow
-import com.example.state.IOUState
 import net.corda.core.contracts.TransactionVerificationException
-import net.corda.core.flows.FlowSessionException
 import net.corda.core.getOrThrow
 import net.corda.testing.node.MockNetwork
+import net.corda.testing.node.MockNetwork.MockNode
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -14,17 +12,16 @@ import kotlin.test.assertFailsWith
 
 class IOUFlowTests {
     lateinit var net: MockNetwork
-    lateinit var a: MockNetwork.MockNode
-    lateinit var b: MockNetwork.MockNode
-    lateinit var c: MockNetwork.MockNode
+    lateinit var a: MockNode
+    lateinit var b: MockNode
+    lateinit var c: MockNode
 
     @Before
     fun setup() {
         net = MockNetwork()
-        val nodes = net.createSomeNodes(3)
+        val nodes = net.createSomeNodes(2)
         a = nodes.partyNodes[0]
         b = nodes.partyNodes[1]
-        c = nodes.partyNodes[2]
         net.runNetwork()
     }
 

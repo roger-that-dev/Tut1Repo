@@ -1,7 +1,5 @@
-package com.example.contract;
+package com.example;
 
-import com.example.flow.IOUFlow;
-import com.example.state.IOUState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import net.corda.core.contracts.ContractState;
@@ -27,15 +25,13 @@ public class IOUFlowTests {
     private MockNetwork net;
     private MockNode a;
     private MockNode b;
-    private MockNode c;
 
     @Before
     public void setup() {
         net = new MockNetwork();
-        BasketOfNodes nodes = net.createSomeNodes(3);
+        BasketOfNodes nodes = net.createSomeNodes(2);
         a = nodes.getPartyNodes().get(0);
         b = nodes.getPartyNodes().get(1);
-        c = nodes.getPartyNodes().get(2);
         net.runNetwork();
     }
 

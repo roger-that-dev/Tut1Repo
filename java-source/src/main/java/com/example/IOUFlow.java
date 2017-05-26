@@ -1,8 +1,6 @@
-package com.example.flow;
+package com.example;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.example.contract.IOUContract;
-import com.example.state.IOUState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.corda.core.contracts.Command;

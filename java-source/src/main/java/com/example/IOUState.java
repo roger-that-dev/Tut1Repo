@@ -1,6 +1,7 @@
-package com.example.state;
+package com.example;
 
-import com.example.contract.IOUContract;
+import com.example.IOUContract;
+import com.google.common.collect.ImmutableList;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.AbstractParty;
@@ -59,12 +60,6 @@ public class IOUState implements LinearState {
      * simple; track this state if we are one of the involved parties.
      */
     @Override public boolean isRelevant(Set<? extends PublicKey> ourKeys) {
-        final List<PublicKey> partyKeys = Stream.of(sender, recipient)
-                .flatMap(party -> getKeys(party.getOwningKey()).stream())
-                .collect(toList());
-        return ourKeys
-                .stream()
-                .anyMatch(partyKeys::contains);
-
+        return ourKeys.contains(sender.getOwningKey()) || ourKeys.contains(recipient.getOwningKey());
     }
 }

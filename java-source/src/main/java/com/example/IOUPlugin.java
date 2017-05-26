@@ -1,6 +1,5 @@
-package com.example.plugin;
+package com.example;
 
-import com.example.service.IOUService;
 import com.google.common.collect.ImmutableList;
 import net.corda.core.node.CordaPluginRegistry;
 import net.corda.core.node.PluginServiceHub;

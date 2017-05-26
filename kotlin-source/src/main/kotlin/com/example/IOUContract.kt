@@ -1,6 +1,5 @@
-package com.example.contract
+package com.example
 
-import com.example.state.IOUState
 import net.corda.core.contracts.*
 import net.corda.core.crypto.SecureHash
 

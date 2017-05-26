@@ -1,6 +1,5 @@
-package com.example.contract;
+package com.example;
 
-import com.example.state.IOUState;
 import net.corda.core.identity.Party;
 import org.junit.BeforeClass;
 import org.junit.Test;
