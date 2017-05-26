@@ -75,11 +75,11 @@ object IOUFlow {
 
             // Stage 4.
             progressTracker.currentStep = GATHERING_SIGS
-            val signedTx = subFlow(CollectSignaturesFlow(partSignedTx))
+            val signedTx = subFlow(CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
             // Stage 5.
             progressTracker.currentStep = FINALISING_TX
-            return subFlow(FinalityFlow(signedTx, setOf(me, otherParty))).single()
+            return subFlow(FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
 
@@ -95,11 +95,10 @@ object IOUFlow {
         override fun call() {
             // Stage 1.
             progressTracker.currentStep = VERIFYING_AND_SIGNING_TX
-            subFlow(object : SignTransactionFlow(otherParty) {
+            subFlow(object : SignTransactionFlow(otherParty, SignTransactionFlow.tracker()) {
                 override fun checkTransaction(stx: SignedTransaction) {
                     // Define custom verification logic here.
                 }
-
             })
         }
     }

@@ -7,7 +7,9 @@ import net.corda.core.contracts.Contract;
 import net.corda.core.contracts.TransactionForContract;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.identity.AbstractParty;
+
 import java.util.stream.Collectors;
+
 import static net.corda.core.contracts.ContractsDSL.requireSingleCommand;
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
@@ -45,7 +47,7 @@ public class IOUContract implements Contract {
 
             // IOU-specific constraints.
             require.using("The IOU's value must be non-negative.",
-                    out.getIOU().getValue() > 0);
+                    out.getValue() > 0);
 
             return null;
         });

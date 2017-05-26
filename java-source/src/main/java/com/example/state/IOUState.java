@@ -1,20 +1,19 @@
 package com.example.state;
 
 import com.example.contract.IOUContract;
-import com.example.model.IOU;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.contracts.UniqueIdentifier;
-import static net.corda.core.crypto.CryptoUtils.getKeys;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import static java.util.stream.Collectors.toList;
 
-// TODO: Implement QueryableState and add ORM code (to match Kotlin example).
+import static java.util.stream.Collectors.toList;
+import static net.corda.core.crypto.CryptoUtils.getKeys;
 
 /**
  * The state object recording IOU agreements between two parties.
@@ -22,31 +21,31 @@ import static java.util.stream.Collectors.toList;
  * A state must implement [ContractState] or one of its descendants.
  */
 public class IOUState implements LinearState {
-    private final IOU iou;
+    private final Integer value;
     private final Party sender;
     private final Party recipient;
     private final IOUContract contract;
     private final UniqueIdentifier linearId;
 
     /**
-     * @param iou details of the IOU.
+     * @param value details of the IOU.
      * @param sender the party issuing the IOU.
      * @param recipient the party receiving and approving the IOU.
      * @param contract the contract which governs which transactions are valid for this state object.
      */
-    public IOUState(IOU iou,
+    public IOUState(Integer value,
                     Party sender,
                     Party recipient,
                     IOUContract contract)
     {
-        this.iou = iou;
+        this.value = value;
         this.sender = sender;
         this.recipient = recipient;
         this.contract = contract;
         this.linearId = new UniqueIdentifier();
     }
 
-    public IOU getIOU() { return iou; }
+    public Integer getValue() { return value; }
     public Party getSender() { return sender; }
     public Party getRecipient() { return recipient; }
     @Override public IOUContract getContract() { return contract; }
