@@ -125,17 +125,6 @@ publishing {
     }
 }
 
-task generateFlowDiagram(type: JavaExec) {
-    classpath = files("build/jythonDeps/plantuml-8039.jar")
-    main = "net.sourceforge.plantuml.Run"
-    args = [
-            "-tsvg",
-            "-output", "../java-source/build/doc",
-            "-exclude", "inc_*",
-            "../doc/*.plantuml"
-    ]
-}
-
 task runExampleClientRPC(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.example.client.ExampleClientRPC'

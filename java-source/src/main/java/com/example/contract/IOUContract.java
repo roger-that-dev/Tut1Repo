@@ -32,7 +32,7 @@ public class IOUContract implements Contract {
      */
     @Override
     public void verify(TransactionForContract tx) {
-        final AuthenticatedObject<Commands.Create> command = requireSingleCommand(tx.getCommands(), Commands.Create.class);
+        final AuthenticatedObject<Commands> command = requireSingleCommand(tx.getCommands(), Commands.class);
         requireThat(require -> {
             // Generic constraints around the IOU transaction.
             require.using("No inputs should be consumed when issuing an IOU.",
