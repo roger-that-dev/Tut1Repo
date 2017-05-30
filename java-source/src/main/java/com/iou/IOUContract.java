@@ -33,7 +33,10 @@ public class IOUContract implements Contract {
             // Constraints on the shape of the transaction.
             check.using("No inputs should be consumed when issuing an IOU.", tx.getInputs().isEmpty());
             check.using("Only one output state should be created.", tx.getOutputs().size() == 1);
+
+            // IOU-specific constraints.
             final IOUState out = (IOUState) tx.getOutputs().get(0);
+            check.using("The IOU's value must be non-negative.",out.getValue() > 0);
             check.using("The sender and the recipient cannot be the same entity.", out.getSender() != out.getRecipient());
 
             // Constraints on the signers.
@@ -41,9 +44,6 @@ public class IOUContract implements Contract {
                     out.getSender().getOwningKey(),
                     out.getRecipient().getOwningKey());
             check.using("All of the participants must be signers.", command.getSigners().containsAll(requiredSigners));
-
-            // IOU-specific constraints.
-            check.using("The IOU's value must be non-negative.",out.getValue() > 0);
 
             return null;
         });
