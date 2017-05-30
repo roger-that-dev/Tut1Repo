@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
- * <p>
+ * 
  * In our simple example, the [Acceptor] always accepts a valid IOU.
  */
 public class IOUFlow {
@@ -33,9 +33,7 @@ public class IOUFlow {
         private final Integer iouValue;
         private final Party otherParty;
 
-        // The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
-        // checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call()
-        // function.
+        /** The progress tracker provides checkpoints indicating the progress of the flow to observers. */
         private final ProgressTracker progressTracker = new ProgressTracker(
                 new ProgressTracker.Step("Generating transaction based on new IOU."),
                 new ProgressTracker.Step("Verifying contract constraints."),
@@ -53,16 +51,14 @@ public class IOUFlow {
             return progressTracker;
         }
 
-        /**
-         * The flow logic is encapsulated within the call() method.
-         */
+        /** The flow logic is encapsulated within the call() method. */
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
             // Obtain our identity.
             final Party me = getServiceHub().getMyInfo().getLegalIdentity();
             // Obtain the identity of the notary we want to use.
-            final Party notary = getServiceHub().getNetworkMapCache().getNotaryNodes().get(0).getNotaryIdentity();
+            final Party notary = getServiceHub().getNetworkMapCache().getAnyNotary(null);
 
             // Stage 1 - Generating the transaction.
             progressTracker.nextStep();

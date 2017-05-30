@@ -25,10 +25,7 @@ object IOUFlow {
     @StartableByRPC
     class Initiator(val iouValue: Int,
                     val otherParty: Party): FlowLogic<SignedTransaction>() {
-        /**
-         * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
-         * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
-         */
+        /** The progress tracker provides checkpoints indicating the progress of the flow to observers. */
         override val progressTracker = ProgressTracker(
                 ProgressTracker.Step("Generating transaction based on new IOU."),
                 ProgressTracker.Step("Verifying contract constraints."),
@@ -36,15 +33,13 @@ object IOUFlow {
                 ProgressTracker.Step("Obtaining the counterparty's signature."),
                 ProgressTracker.Step("Obtaining notary signature and recording transaction."))
 
-        /**
-         * The flow logic is encapsulated within the call() method.
-         */
+        /** The flow logic is encapsulated within the call() method. */
         @Suspendable
         override fun call(): SignedTransaction {
             // Obtain our identity.
             val me = serviceHub.myInfo.legalIdentity
             // Obtain the identity of the notary we want to use.
-            val notary = serviceHub.networkMapCache.notaryNodes.single().notaryIdentity
+            val notary = serviceHub.networkMapCache.getAnyNotary()
 
             // Stage 1 - Generating the transaction.
             progressTracker.nextStep()
