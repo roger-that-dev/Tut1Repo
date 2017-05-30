@@ -5,7 +5,6 @@ import com.iou.IOUFlow.Acceptor
 import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TransactionType
-import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
@@ -15,7 +14,6 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.flows.CollectSignaturesFlow
 import net.corda.flows.FinalityFlow
 import net.corda.flows.SignTransactionFlow
-import org.bouncycastle.asn1.x500.X500Name
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].

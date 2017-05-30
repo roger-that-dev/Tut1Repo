@@ -10,16 +10,12 @@ import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatingFlow;
 import net.corda.core.flows.StartableByRPC;
 import net.corda.core.identity.Party;
-import net.corda.core.node.NodeInfo;
-import net.corda.core.node.services.NetworkMapCache;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 import net.corda.flows.CollectSignaturesFlow;
 import net.corda.flows.FinalityFlow;
-import net.corda.flows.ResolveTransactionsFlow;
 import net.corda.flows.SignTransactionFlow;
-import org.bouncycastle.asn1.x500.X500Name;
 
 import java.security.PublicKey;
 import java.util.List;
