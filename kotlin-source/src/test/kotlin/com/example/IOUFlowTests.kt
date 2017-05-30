@@ -1,5 +1,7 @@
-package com.example
+package com.iou
 
+import com.iou.IOUFlow
+import com.iou.IOUState
 import net.corda.core.contracts.TransactionVerificationException
 import net.corda.core.getOrThrow
 import net.corda.testing.node.MockNetwork

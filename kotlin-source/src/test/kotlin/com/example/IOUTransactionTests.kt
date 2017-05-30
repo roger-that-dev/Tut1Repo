@@ -1,4 +1,4 @@
-package com.example
+package com.iou
 
 import net.corda.testing.*
 import org.junit.Test
@@ -10,7 +10,7 @@ class IOUTransactionTests {
             transaction {
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
                 fails()
-                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Create() }
                 verifies()
             }
         }
@@ -22,7 +22,7 @@ class IOUTransactionTests {
             transaction {
                 input { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
-                command(MEGA_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("No inputs should be consumed when issuing an IOU.")
             }
         }
@@ -34,7 +34,7 @@ class IOUTransactionTests {
             transaction {
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
-                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("Only one output state should be created.")
             }
         }
@@ -45,7 +45,7 @@ class IOUTransactionTests {
         ledger {
             transaction {
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
-                command(MINI_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MINI_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("All of the participants must be signers.")
             }
         }
@@ -56,7 +56,7 @@ class IOUTransactionTests {
         ledger {
             transaction {
                 output { IOUState(1, MINI_CORP, MEGA_CORP, IOUContract()) }
-                command(MEGA_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("All of the participants must be signers.")
             }
         }
@@ -67,7 +67,7 @@ class IOUTransactionTests {
         ledger {
             transaction {
                 output { IOUState(1, MEGA_CORP, MEGA_CORP, IOUContract()) }
-                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("The sender and the recipient cannot be the same entity.")
             }
         }
@@ -78,7 +78,7 @@ class IOUTransactionTests {
         ledger {
             transaction {
                 output { IOUState(-1, MINI_CORP, MEGA_CORP, IOUContract()) }
-                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Commands.Create() }
+                command(MEGA_CORP_PUBKEY, MINI_CORP_PUBKEY) { IOUContract.Create() }
                 `fails with`("The IOU's value must be non-negative.")
             }
         }

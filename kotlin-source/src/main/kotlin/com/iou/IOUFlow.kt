@@ -1,10 +1,11 @@
-package com.example
+package com.iou
 
 import co.paralleluniverse.fibers.Suspendable
-import com.example.IOUFlow.Acceptor
-import com.example.IOUFlow.Initiator
+import com.iou.IOUFlow.Acceptor
+import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TransactionType
+import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
@@ -14,6 +15,7 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.flows.CollectSignaturesFlow
 import net.corda.flows.FinalityFlow
 import net.corda.flows.SignTransactionFlow
+import org.bouncycastle.asn1.x500.X500Name
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
@@ -29,16 +31,12 @@ object IOUFlow {
          * The progress tracker checkpoints each stage of the flow and outputs the specified messages when each
          * checkpoint is reached in the code. See the 'progressTracker.currentStep' expressions within the call() function.
          */
-        companion object {
-            object GENERATING_TX : ProgressTracker.Step("Generating transaction based on new IOU.")
-            object VERIFYING_TX : ProgressTracker.Step("Verifying contract constraints.")
-            object SIGNING_TX : ProgressTracker.Step("Signing transaction with our private key.")
-            object GATHERING_SIGS : ProgressTracker.Step("Obtaining the counterparty's signature.")
-            object FINALISING_TX : ProgressTracker.Step("Obtaining notary signature and recording transaction.")
-            fun tracker() = ProgressTracker(GENERATING_TX, VERIFYING_TX, SIGNING_TX, GATHERING_SIGS, FINALISING_TX)
-        }
-
-        override val progressTracker = tracker()
+        override val progressTracker = ProgressTracker(
+                ProgressTracker.Step("Generating transaction based on new IOU."),
+                ProgressTracker.Step("Verifying contract constraints."),
+                ProgressTracker.Step("Signing transaction with our private key."),
+                ProgressTracker.Step("Obtaining the counterparty's signature."),
+                ProgressTracker.Step("Obtaining notary signature and recording transaction."))
 
         /**
          * The flow logic is encapsulated within the call() method.
@@ -50,43 +48,41 @@ object IOUFlow {
             // Obtain the identity of the notary we want to use.
             val notary = serviceHub.networkMapCache.notaryNodes.single().notaryIdentity
 
-            // Stage 1.
-            progressTracker.currentStep = GENERATING_TX
+            // Stage 1 - Generating the transaction.
+            progressTracker.nextStep()
             val iou = IOUState(iouValue, me, otherParty, IOUContract())
-            val txCommand = Command(IOUContract.Commands.Create(), iou.participants.map { it.owningKey })
+            val txCommand = Command(IOUContract.Create(), iou.participants.map { it.owningKey })
             val unsignedTx = TransactionType.General.Builder(notary).withItems(iou, txCommand)
 
-            // Stage 2.
-            progressTracker.currentStep = VERIFYING_TX
+            // Stage 2 - Verifying the transaction.
+            progressTracker.nextStep()
             unsignedTx.toWireTransaction().toLedgerTransaction(serviceHub).verify()
 
-            // Stage 3.
-            progressTracker.currentStep = SIGNING_TX
+            // Stage 3 - Signing the transaction.
+            progressTracker.nextStep()
             val partSignedTx = serviceHub.signInitialTransaction(unsignedTx)
 
-            // Stage 4.
-            progressTracker.currentStep = GATHERING_SIGS
-            val signedTx = subFlow(CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
+            // Stage 4 - Gathering the signatures.
+            progressTracker.nextStep()
+            val signedTx = subFlow(
+                    CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
-            // Stage 5.
-            progressTracker.currentStep = FINALISING_TX
-            return subFlow(FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
+            // Stage 5 - Finalising the transaction.
+            progressTracker.nextStep()
+            return subFlow(
+                    FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
 
     class Acceptor(val otherParty: Party) : FlowLogic<Unit>() {
-        companion object {
-            object VERIFYING_AND_SIGNING_TX : ProgressTracker.Step("Verifying and signing the proposed transaction.")
-            fun tracker() = ProgressTracker(VERIFYING_AND_SIGNING_TX)
-        }
-
-        override val progressTracker = tracker()
+        override val progressTracker = ProgressTracker(
+                ProgressTracker.Step("Verifying and signing the proposed transaction."))
 
         @Suspendable
         override fun call() {
-            // Stage 1.
-            progressTracker.currentStep = VERIFYING_AND_SIGNING_TX
-            subFlow(object : SignTransactionFlow(otherParty, SignTransactionFlow.tracker()) {
+            // Stage 1 - Verifying and signing the transaction.
+            progressTracker.nextStep()
+            subFlow(object : SignTransactionFlow(otherParty, tracker()) {
                 override fun checkTransaction(stx: SignedTransaction) {
                     // Define custom verification logic here.
                 }

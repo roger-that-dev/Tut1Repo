@@ -1,7 +1,8 @@
-package com.example
+package com.iou
 
 import net.corda.core.contracts.*
 import net.corda.core.crypto.SecureHash
+import net.corda.core.crypto.SecureHash.Companion.sha256
 
 /**
  * A basic smart contract that enforces rules regarding the issuance of [IOUState].
@@ -14,26 +15,26 @@ import net.corda.core.crypto.SecureHash
 open class IOUContract : Contract {
     /** If verify() doesn't throw an exception, the contract accepts the transaction. */
     override fun verify(tx: TransactionForContract) {
-        val command = tx.commands.requireSingleCommand<Commands>()
+        val command = tx.commands.requireSingleCommand<Create>()
+
         requireThat {
-            // Generic constraints around the IOU transaction.
+            // Constraints on the shape of the transaction.
             "No inputs should be consumed when issuing an IOU." using (tx.inputs.isEmpty())
             "Only one output state should be created." using (tx.outputs.size == 1)
             val out = tx.outputs.single() as IOUState
             "The sender and the recipient cannot be the same entity." using (out.sender != out.recipient)
+
+            // Constraints on the signers.
             "All of the participants must be signers." using (command.signers.containsAll(out.participants.map { it.owningKey }))
+
             // IOU-specific constraints.
             "The IOU's value must be non-negative." using (out.value > 0)
         }
     }
 
-    /**
-     * This contract only implements one command, Create.
-     */
-    interface Commands : CommandData {
-        class Create : Commands
-    }
+    /** This contract only implements one command, Create. */
+    class Create : CommandData
 
     /** This is a reference to the underlying legal contract template and associated parameters. */
-    override val legalContractReference: SecureHash = SecureHash.sha256("IOU contract template and params")
+    override val legalContractReference: SecureHash = sha256("<Legal prose of the contract.>")
 }

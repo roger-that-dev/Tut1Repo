@@ -1,4 +1,4 @@
-package com.example
+package com.iou
 
 class IOUPlugin : net.corda.core.node.CordaPluginRegistry() {
     /**
@@ -11,7 +11,7 @@ class IOUPlugin : net.corda.core.node.CordaPluginRegistry() {
     object IOUService {
         class Service(services: net.corda.core.node.PluginServiceHub) {
             init {
-                services.registerServiceFlow(com.example.IOUFlow.Initiator::class.java) { com.example.IOUFlow.Acceptor(it) }
+                services.registerServiceFlow(IOUFlow.Initiator::class.java) { IOUFlow.Acceptor(it) }
             }
         }
     }
