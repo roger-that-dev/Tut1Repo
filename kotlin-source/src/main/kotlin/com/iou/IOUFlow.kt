@@ -25,6 +25,13 @@ object IOUFlow {
     @StartableByRPC
     class Initiator(val iouValue: Int,
                     val otherParty: Party): FlowLogic<SignedTransaction>() {
+        /** The progress tracker provides checkpoints indicating the progress of the flow to observers. */
+        override val progressTracker = ProgressTracker(
+                ProgressTracker.Step("Generating transaction based on new IOU."),
+                ProgressTracker.Step("Verifying contract constraints."),
+                ProgressTracker.Step("Signing transaction with our private key."),
+                ProgressTracker.Step("Obtaining the counterparty's signature."),
+                ProgressTracker.Step("Obtaining notary signature and recording transaction."))
 
         /** The flow logic is encapsulated within the call() method. */
         @Suspendable
@@ -35,27 +42,35 @@ object IOUFlow {
             val notary = serviceHub.networkMapCache.getAnyNotary()
 
             // Stage 1 - Generating the transaction.
+            progressTracker.nextStep()
             val iou = IOUState(iouValue, me, otherParty, IOUContract())
             val txCommand = Command(IOUContract.Create(), iou.participants.map { it.owningKey })
             val unsignedTx = TransactionType.General.Builder(notary).withItems(iou, txCommand)
 
             // Stage 2 - Verifying the transaction.
+            progressTracker.nextStep()
             unsignedTx.toWireTransaction().toLedgerTransaction(serviceHub).verify()
 
             // Stage 3 - Signing the transaction.
+            progressTracker.nextStep()
             val partSignedTx = serviceHub.signInitialTransaction(unsignedTx)
 
             // Stage 4 - Gathering the signatures.
+            progressTracker.nextStep()
             val signedTx = subFlow(
                     CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
             // Stage 5 - Finalising the transaction.
+            progressTracker.nextStep()
             return subFlow(
                     FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
 
     class Acceptor(val otherParty: Party) : FlowLogic<Unit>() {
+        override val progressTracker = ProgressTracker(
+                ProgressTracker.Step("Verifying and signing the proposed transaction."))
+
         @Suspendable
         override fun call() {
             // Stage 1 - Verifying and signing the transaction.
