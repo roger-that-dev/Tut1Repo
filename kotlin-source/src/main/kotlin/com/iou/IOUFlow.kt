@@ -1,6 +1,7 @@
 package com.iou
 
 import co.paralleluniverse.fibers.Suspendable
+import com.google.common.collect.ImmutableList
 import com.iou.IOUFlow.Acceptor
 import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
@@ -14,6 +15,7 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.flows.CollectSignaturesFlow
 import net.corda.flows.FinalityFlow
 import net.corda.flows.SignTransactionFlow
+import java.security.PublicKey
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
@@ -60,13 +62,23 @@ object IOUFlow {
             val signedTx = subFlow(
                     CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
+            val otherKey = serviceHub.keyManagementService.freshKey()
+
+            val otherKeys = ImmutableList.of(serviceHub.keyManagementService.freshKey(),
+                    serviceHub
+                            .keyManagementService.freshKey())
+
+            val signedTx1 = serviceHub.signInitialTransaction(unsignedTx)
+            val signedTx2 = serviceHub.signInitialTransaction(unsignedTx, otherKey)
+            val signedTx3 = serviceHub.signInitialTransaction(unsignedTx, otherKeys)
+
             // Stage 5 - Finalising the transaction.
             progressTracker.nextStep()
             return subFlow(
                     FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
-
+    
     class Acceptor(val otherParty: Party) : FlowLogic<Unit>() {
         override val progressTracker = ProgressTracker(
                 ProgressTracker.Step("Verifying and signing the proposed transaction."))

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.TransactionType;
+import net.corda.core.crypto.DigitalSignature;
 import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatingFlow;
@@ -18,6 +19,7 @@ import net.corda.flows.FinalityFlow;
 import net.corda.flows.SignTransactionFlow;
 
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.util.List;
 import java.util.Set;
 
@@ -67,6 +69,25 @@ public class IOUFlow {
             final Command txCommand = new Command(new IOUContract.Create(), signers);
             final TransactionBuilder unsignedTx = new TransactionType.General.Builder(notary).withItems(iou, txCommand);
 
+            final PublicKey otherKey = getServiceHub().getKeyManagementService().freshKey();
+
+            final List<PublicKey> otherKeys = ImmutableList.of(getServiceHub().getKeyManagementService().freshKey(),
+                    getServiceHub()
+                    .getKeyManagementService().freshKey());
+
+
+            final SignedTransaction signedTx1 = getServiceHub().signInitialTransaction(unsignedTx);
+            final SignedTransaction signedTx2 = getServiceHub().signInitialTransaction(unsignedTx, otherKey);
+            final SignedTransaction signedTx3 = getServiceHub().signInitialTransaction(unsignedTx, otherKeys);
+
+
+            try {
+                signedTx1.verifySignatures(otherKey, otherKey);
+            } catch (SignatureException e) {
+                // Handle the exception.
+            }
+
+
             // Stage 2 - Verifying the transaction.
             progressTracker.nextStep();
             unsignedTx.toWireTransaction().toLedgerTransaction(getServiceHub()).verify();
@@ -88,6 +109,7 @@ public class IOUFlow {
         }
     }
 
+    @InitiatedBy(Initiator::class)
     public static class Acceptor extends FlowLogic<Void> {
 
         private final Party otherParty;
