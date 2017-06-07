@@ -12,7 +12,7 @@ import net.corda.core.crypto.SecureHash.Companion.sha256
  * - One output state: the new [IOUState].
  * - A Create() command with the public keys of both the sender and the recipient.
  */
-open class IOUContract : Contract {
+class IOUContract : Contract {
     /** If verify() doesn't throw an exception, the contract accepts the transaction. */
     override fun verify(tx: TransactionForContract) {
         val command = tx.commands.requireSingleCommand<Create>()

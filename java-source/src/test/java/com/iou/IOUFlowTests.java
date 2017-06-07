@@ -31,6 +31,7 @@ public class IOUFlowTests {
         BasketOfNodes nodes = net.createSomeNodes(2);
         a = nodes.getPartyNodes().get(0);
         b = nodes.getPartyNodes().get(1);
+        b.registerInitiatedFlow(IOUFlow.Acceptor.class);
         net.runNetwork();
     }
 

@@ -1,11 +1,13 @@
 package com.iou
 
 import co.paralleluniverse.fibers.Suspendable
+import com.google.common.collect.ImmutableList
 import com.iou.IOUFlow.Acceptor
 import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TransactionType
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
@@ -14,6 +16,7 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.flows.CollectSignaturesFlow
 import net.corda.flows.FinalityFlow
 import net.corda.flows.SignTransactionFlow
+import java.security.PublicKey
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
@@ -57,16 +60,15 @@ object IOUFlow {
 
             // Stage 4 - Gathering the signatures.
             progressTracker.nextStep()
-            val signedTx = subFlow(
-                    CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
+            val signedTx = subFlow(CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
             // Stage 5 - Finalising the transaction.
             progressTracker.nextStep()
-            return subFlow(
-                    FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
+            return subFlow(FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
 
+    @InitiatedBy(Initiator::class)
     class Acceptor(val otherParty: Party) : FlowLogic<Unit>() {
         override val progressTracker = ProgressTracker(
                 ProgressTracker.Step("Verifying and signing the proposed transaction."))
