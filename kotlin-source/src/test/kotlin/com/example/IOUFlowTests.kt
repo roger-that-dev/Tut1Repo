@@ -24,6 +24,7 @@ class IOUFlowTests {
         val nodes = net.createSomeNodes(2)
         a = nodes.partyNodes[0]
         b = nodes.partyNodes[1]
+        b.registerInitiatedFlow(IOUFlow.Acceptor::class.java)
         net.runNetwork()
     }
 

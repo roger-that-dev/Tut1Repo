@@ -7,6 +7,7 @@ import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TransactionType
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
@@ -59,26 +60,15 @@ object IOUFlow {
 
             // Stage 4 - Gathering the signatures.
             progressTracker.nextStep()
-            val signedTx = subFlow(
-                    CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
-
-            val otherKey = serviceHub.keyManagementService.freshKey()
-
-            val otherKeys = ImmutableList.of(serviceHub.keyManagementService.freshKey(),
-                    serviceHub
-                            .keyManagementService.freshKey())
-
-            val signedTx1 = serviceHub.signInitialTransaction(unsignedTx)
-            val signedTx2 = serviceHub.signInitialTransaction(unsignedTx, otherKey)
-            val signedTx3 = serviceHub.signInitialTransaction(unsignedTx, otherKeys)
+            val signedTx = subFlow(CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
             // Stage 5 - Finalising the transaction.
             progressTracker.nextStep()
-            return subFlow(
-                    FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
+            return subFlow(FinalityFlow(listOf(signedTx), setOf(me, otherParty), FinalityFlow.tracker())).single()
         }
     }
-    
+
+    @InitiatedBy(Initiator::class)
     class Acceptor(val otherParty: Party) : FlowLogic<Unit>() {
         override val progressTracker = ProgressTracker(
                 ProgressTracker.Step("Verifying and signing the proposed transaction."))

@@ -6,10 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.TransactionType;
 import net.corda.core.crypto.DigitalSignature;
-import net.corda.core.flows.FlowException;
-import net.corda.core.flows.FlowLogic;
-import net.corda.core.flows.InitiatingFlow;
-import net.corda.core.flows.StartableByRPC;
+import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
@@ -109,7 +106,7 @@ public class IOUFlow {
         }
     }
 
-    @InitiatedBy(Initiator::class)
+    @InitiatedBy(Initiator.class)
     public static class Acceptor extends FlowLogic<Void> {
 
         private final Party otherParty;
