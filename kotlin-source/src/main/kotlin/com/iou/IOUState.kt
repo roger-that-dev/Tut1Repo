@@ -16,7 +16,7 @@ import net.corda.core.identity.Party
 class IOUState(val value: Int,
                val sender: Party,
                val recipient: Party,
-               override val contract: IOUContract) : ContractState {
+               override val contract: IOUContract = IOUContract()) : ContractState {
 
     /** The parties involved in this state. */
     override val participants get() = listOf(sender, recipient)

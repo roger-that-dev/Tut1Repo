@@ -2,10 +2,7 @@ package com.iou;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import net.corda.core.contracts.Command;
-import net.corda.core.contracts.TransactionType;
-import net.corda.core.crypto.DigitalSignature;
 import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
@@ -16,9 +13,7 @@ import net.corda.flows.FinalityFlow;
 import net.corda.flows.SignTransactionFlow;
 
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This flow allows the [Initiator] and the [Acceptor] to agree on the issuance of an [IOUState].
@@ -33,12 +28,7 @@ public class IOUFlow {
         private final Party otherParty;
 
         /** The progress tracker provides checkpoints indicating the progress of the flow to observers. */
-        private final ProgressTracker progressTracker = new ProgressTracker(
-                new ProgressTracker.Step("Generating transaction based on new IOU."),
-                new ProgressTracker.Step("Verifying contract constraints."),
-                new ProgressTracker.Step("Signing transaction with our private key."),
-                new ProgressTracker.Step("Obtaining the counterparty's signature."),
-                new ProgressTracker.Step("Obtaining notary signature and recording transaction."));
+        private final ProgressTracker progressTracker = new ProgressTracker();
 
         public Initiator(Integer iouValue, Party otherParty) {
             this.iouValue = iouValue;
@@ -54,55 +44,34 @@ public class IOUFlow {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            // Obtain our identity.
-            final Party me = getServiceHub().getMyInfo().getLegalIdentity();
-            // Obtain the identity of the notary we want to use.
-            final Party notary = getServiceHub().getNetworkMapCache().getAnyNotary(null);
-
             // Stage 1 - Generating the transaction.
-            progressTracker.nextStep();
-            final IOUState iou = new IOUState(iouValue, me, otherParty, new IOUContract());
-            final List<PublicKey> signers = ImmutableList.of(iou.getSender().getOwningKey(), iou.getRecipient().getOwningKey());
+
+            // We create a transaction builder.
+            final TransactionBuilder txBuilder = new TransactionBuilder();
+            final Party notary = getServiceHub().getNetworkMapCache().getAnyNotary(null);
+            txBuilder.setNotary(notary);
+
+            // We create the transaction's components.
+            final Party ourIdentity = getServiceHub().getMyInfo().getLegalIdentity();
+            final IOUState iou = new IOUState(iouValue, ourIdentity, otherParty, new IOUContract());
+            final List<PublicKey> signers = ImmutableList.of(ourIdentity.getOwningKey(), otherParty.getOwningKey());
             final Command txCommand = new Command(new IOUContract.Create(), signers);
-            final TransactionBuilder unsignedTx = new TransactionType.General.Builder(notary).withItems(iou, txCommand);
 
-            final PublicKey otherKey = getServiceHub().getKeyManagementService().freshKey();
-
-            final List<PublicKey> otherKeys = ImmutableList.of(getServiceHub().getKeyManagementService().freshKey(),
-                    getServiceHub()
-                    .getKeyManagementService().freshKey());
-
-
-            final SignedTransaction signedTx1 = getServiceHub().signInitialTransaction(unsignedTx);
-            final SignedTransaction signedTx2 = getServiceHub().signInitialTransaction(unsignedTx, otherKey);
-            final SignedTransaction signedTx3 = getServiceHub().signInitialTransaction(unsignedTx, otherKeys);
-
-
-            try {
-                signedTx1.verifySignatures(otherKey, otherKey);
-            } catch (SignatureException e) {
-                // Handle the exception.
-            }
-
+            // Adding the item's to the builder.
+            txBuilder.withItems(iou, txCommand);
 
             // Stage 2 - Verifying the transaction.
-            progressTracker.nextStep();
-            unsignedTx.toWireTransaction().toLedgerTransaction(getServiceHub()).verify();
+            txBuilder.toWireTransaction().toLedgerTransaction(getServiceHub()).verify();
 
             // Stage 3 - Signing the transaction.
-            progressTracker.nextStep();
-            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(unsignedTx);
+            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
             // Stage 4 - Gathering the signatures.
-            progressTracker.nextStep();
             final SignedTransaction signedTx = subFlow(
                     new CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.Companion.tracker()));
 
             // Stage 5 - Finalising the transaction.
-            progressTracker.nextStep();
-            final Set<Party> participants = ImmutableSet.of(me, otherParty);
-            return subFlow(
-                    new FinalityFlow(signedTx, participants)).get(0);
+            return subFlow(new FinalityFlow(signedTx)).get(0);
         }
     }
 
@@ -110,24 +79,15 @@ public class IOUFlow {
     public static class Acceptor extends FlowLogic<Void> {
 
         private final Party otherParty;
-        private final ProgressTracker progressTracker = new ProgressTracker(
-                new ProgressTracker.Step("Verifying and signing the proposed transaction.")
-        );
 
         public Acceptor(Party otherParty) {
             this.otherParty = otherParty;
-        }
-
-        @Override
-        public ProgressTracker getProgressTracker() {
-            return progressTracker;
         }
 
         @Suspendable
         @Override
         public Void call() throws FlowException {
             // Stage 1 - Verifying and signing the transaction.
-            progressTracker.nextStep();
 
             class signTxFlow extends SignTransactionFlow {
                 private signTxFlow(Party otherParty, ProgressTracker progressTracker) {
