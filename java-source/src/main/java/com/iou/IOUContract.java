@@ -1,14 +1,15 @@
 package com.iou;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import net.corda.core.contracts.AuthenticatedObject;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.contracts.TransactionForContract;
 import net.corda.core.crypto.SecureHash;
+import net.corda.core.identity.Party;
 
 import java.security.PublicKey;
-import java.util.List;
+import java.util.Set;
 
 import static net.corda.core.contracts.ContractsDSL.requireSingleCommand;
 import static net.corda.core.contracts.ContractsDSL.requireThat;
@@ -36,14 +37,15 @@ public class IOUContract implements Contract {
 
             // IOU-specific constraints.
             final IOUState out = (IOUState) tx.getOutputs().get(0);
+            final Party sender = out.getSender();
+            final Party recipient = out.getRecipient();
             check.using("The IOU's value must be non-negative.",out.getValue() > 0);
-            check.using("The sender and the recipient cannot be the same entity.", out.getSender() != out.getRecipient());
+            check.using("The sender and the recipient cannot be the same entity.", sender != recipient);
 
             // Constraints on the signers.
-            final List<PublicKey> requiredSigners = ImmutableList.of(
-                    out.getSender().getOwningKey(),
-                    out.getRecipient().getOwningKey());
-            check.using("All of the participants must be signers.", command.getSigners().containsAll(requiredSigners));
+            final Set<PublicKey> requiredSigners = Sets.newHashSet(sender.getOwningKey(), recipient.getOwningKey());
+            final Set<PublicKey> signerSet = Sets.newHashSet(command.getSigners());
+            check.using("All of the participants must be signers.", (signerSet.equals(requiredSigners)));
 
             return null;
         });

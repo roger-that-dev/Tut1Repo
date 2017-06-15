@@ -11,13 +11,12 @@ public class IOUState implements ContractState {
     private final Integer value;
     private final Party sender;
     private final Party recipient;
-    private final IOUContract contract;
+    private final IOUContract contract = new IOUContract();
 
-    public IOUState(Integer value, Party sender, Party recipient, IOUContract contract) {
+    public IOUState(Integer value, Party sender, Party recipient) {
         this.value = value;
         this.sender = sender;
         this.recipient = recipient;
-        this.contract = contract;
     }
 
     public Integer getValue() {

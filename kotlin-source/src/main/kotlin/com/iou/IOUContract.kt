@@ -28,7 +28,7 @@ class IOUContract : Contract {
             "The sender and the recipient cannot be the same entity." using (out.sender != out.recipient)
 
             // Constraints on the signers.
-            "All of the participants must be signers." using (command.signers.containsAll(out.participants.map { it.owningKey }))
+            "All of the participants must be signers." using (command.signers.toSet() == out.participants.map { it.owningKey }.toSet())
         }
     }
 

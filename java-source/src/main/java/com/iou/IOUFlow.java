@@ -53,7 +53,7 @@ public class IOUFlow {
 
             // We create the transaction's components.
             final Party ourIdentity = getServiceHub().getMyInfo().getLegalIdentity();
-            final IOUState iou = new IOUState(iouValue, ourIdentity, otherParty, new IOUContract());
+            final IOUState iou = new IOUState(iouValue, ourIdentity, otherParty);
             final List<PublicKey> signers = ImmutableList.of(ourIdentity.getOwningKey(), otherParty.getOwningKey());
             final Command txCommand = new Command(new IOUContract.Create(), signers);
 

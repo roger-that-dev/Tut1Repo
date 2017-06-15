@@ -1,8 +1,6 @@
 package com.iou
 
 import co.paralleluniverse.fibers.Suspendable
-import com.iou.IOUFlow.Acceptor
-import com.iou.IOUFlow.Initiator
 import net.corda.core.contracts.Command
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatedBy
@@ -25,7 +23,7 @@ object IOUFlow {
     @InitiatingFlow
     @StartableByRPC
     class Initiator(val iouValue: Int,
-                    val otherParty: Party): FlowLogic<SignedTransaction>() {
+                    val otherParty: Party) : FlowLogic<SignedTransaction>() {
 
         /** The progress tracker provides checkpoints indicating the progress of the flow to observers. */
         override val progressTracker = ProgressTracker()
@@ -33,9 +31,7 @@ object IOUFlow {
         /** The flow logic is encapsulated within the call() method. */
         @Suspendable
         override fun call(): SignedTransaction {
-            // Stage 1 - Generating the transaction.
-
-            // We create a transaction builder.
+            // We create a transaction builder
             val txBuilder = TransactionBuilder()
             val notaryIdentity = serviceHub.networkMapCache.getAnyNotary()
             txBuilder.notary = notaryIdentity
@@ -48,16 +44,16 @@ object IOUFlow {
             // Adding the item's to the builder.
             txBuilder.withItems(iou, txCommand)
 
-            // Stage 2 - Verifying the transaction.
+            // Verifying the transaction.
             txBuilder.toWireTransaction().toLedgerTransaction(serviceHub).verify()
 
-            // Stage 3 - Signing the transaction.
+            // Signing the transaction.
             val partSignedTx = serviceHub.signInitialTransaction(txBuilder)
 
-            // Stage 4 - Gathering the signatures.
+            // Gathering the signatures.
             val signedTx = subFlow(CollectSignaturesFlow(partSignedTx, CollectSignaturesFlow.tracker()))
 
-            // Stage 5 - Finalising the transaction.
+            // Finalising the transaction.
             return subFlow(FinalityFlow(signedTx)).single()
         }
     }
